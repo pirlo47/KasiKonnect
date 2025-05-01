@@ -1,2 +1,2 @@
 # KasiKonnect
-Application for developing the growth in social and economical state of local townships
+Application for developing growth in social and economical state of local townships
