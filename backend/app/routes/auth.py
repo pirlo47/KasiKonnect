@@ -1,15 +1,15 @@
-from flask import Flask, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
-from flask_bcrypt import Bcrypt
-from flask_jwt_extended import JWTManager, create_access_token
-from msal import PublicClientApplication  # Microsoft Authentication
+from flask import Blueprint, request, jsonify
+from .. import db, bcrypt
+from flask_jwt_extended import create_access_token
+from msal import PublicClientApplication
 
-app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///users.db"
-app.config["JWT_SECRET_KEY"] = "supersecretkey"
-db = SQLAlchemy(app)
-bcrypt = Bcrypt(app)
-jwt = JWTManager(app)
+bp = Blueprint('auth', __name__, url_prefix='/auth')
+
+# Microsoft Authentication setup
+client_id = "4eb43f02-6f25-41cb-8c9f-2248d5b16f25"
+tenant_id = "3d972777-ed64-4708-b162-3314801c7198"
+authority = f"https://login.microsoftonline.com/{tenant_id}"
+msal_client = PublicClientApplication(client_id, authority=authority)
 
 # User model
 class User(db.Model):
@@ -21,13 +21,7 @@ class User(db.Model):
     location = db.Column(db.String(200), nullable=True)
     display_picture = db.Column(db.String(200))
 
-# Microsoft Authentication setup
-client_id = "4eb43f02-6f25-41cb-8c9f-2248d5b16f25"
-tenant_id = "3d972777-ed64-4708-b162-3314801c7198"
-authority = f"https://login.microsoftonline.com/{tenant_id}"
-msal_client = PublicClientApplication(client_id, authority=authority)
-
-@app.route("/auth/login", methods=["POST"])
+@bp.route("/login", methods=["POST"])
 def login():
     data = request.json
     user = User.query.filter_by(email=data["email"]).first()
@@ -36,7 +30,7 @@ def login():
         return jsonify({"token": access_token}), 200
     return jsonify({"message": "Invalid credentials"}), 401
 
-@app.route("/auth/signup", methods=["POST"])
+@bp.route("/signup", methods=["POST"])
 def signup():
     data = request.json
     hashed_pw = bcrypt.generate_password_hash(data["password"]).decode("utf-8")
@@ -52,10 +46,7 @@ def signup():
     db.session.commit()
     return jsonify({"message": "User created"}), 201
 
-@app.route("/auth/microsoft-login", methods=["GET"])
+@bp.route("/microsoft-login", methods=["GET"])
 def microsoft_login():
     auth_url = msal_client.get_authorization_request_url(["user.read"])
     return jsonify({"auth_url": auth_url})
-
-if __name__ == "__main__":
-    app.run(debug=True)
