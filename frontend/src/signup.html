@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KasiConnect Signup</title>
+    <link rel="stylesheet" href="/public/styles/main.css">
+</head>
+<body>
+    <h2>Sign Up for KasiConnect</h2>
+    <form id="signup-form">
+        <label for="name">Name:</label>
+        <input type="text" id="name" required>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" required>
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" required>
+
+        <label>Role:</label>
+        <input type="radio" name="role" value="client" required> Client
+        <input type="radio" name="role" value="service_provider" required> Service Provider
+
+        <button type="submit">Sign Up</button>
+    </form>
+
+    <p>Already have an account? <a href="login.html">Login</a></p>
+
+    <script src="/scripts/auth.js"></script>
+    <script>
+        document.getElementById("signup-form").addEventListener("submit", function(event) {
+            event.preventDefault();
+            signupUser();
+        });
+    </script>
+</body>
+</html>
